@@ -1,0 +1,212 @@
+{
+  "createdAt": "2025-06-25T08:41:47.836Z",
+  "updatedAt": "2025-06-25T08:46:11.000Z",
+  "id": "55B9GRTGPOtqih9W",
+  "name": "My workflow 6",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "100a70e4-3df2-464c-b88b-f114fb12fd42",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a31e852b-6ab8-4f51-919f-89b55f1b8524",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        320,
+        200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "a1127f6d-d84b-49ad-b773-b99c7c0606f8",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "all",
+        "limit": "={{ $fromAI(\"limit\")}}",
+        "additionalFields": {
+          "keyword": "={{ $fromAI(\"keyword\") }}"
+        }
+      },
+      "id": "f1ee9b98-fd30-4b3f-8930-fa89711c2706",
+      "name": "Hacker News",
+      "type": "n8n-nodes-base.hackerNewsTool",
+      "typeVersion": 1,
+      "position": [
+        560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b96d1866-9459-4133-92bd-aa65d765f3ec",
+      "name": "SerpAPI",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        680,
+        200
+      ],
+      "credentials": {
+        "serpApi": {
+          "id": "eG7hmKR9YyG7ThzZ",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c827ff3b-2990-4db5-965e-3f3543113720",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cd372732-bd30-4f20-851f-cb4da642ca9e",
+      "name": "Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        820,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=You are a research assistant agent. You have Wikipedia, Hacker News API, and Serp API at your disposal. \n\nTo answer the user's question, first search wikipedia. If you can't find your answer there, then search articles using Hacker News API. If that doesn't work either, then use Serp API to answer the user's question.\n\n*REMINDER*\nYou should only be calling one tool. Never call all three tools if you can get an answer with just one: Wikipedia, Hacker News API, and Serp API"
+        }
+      },
+      "id": "0c015fd6-a1cc-4d88-bf57-ba64f6ca7053",
+      "name": "Research Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        440,
+        -20
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hacker News": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Execute Workflow Trigger": [
+      {
+        "json": {
+          "query": "tell me about zigron"
+        }
+      }
+    ]
+  },
+  "versionId": "fdf75e4f-c757-44ef-8db1-3e32c0ede7b9",
+  "triggerCount": 0,
+  "tags": []
+}
