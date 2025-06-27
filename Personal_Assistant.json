@@ -1,0 +1,732 @@
+{
+  "name": "Personal Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "id": "0014f8dc-129b-4c46-bd91-d6e479997a8b",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        -280,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19MEAwqL6LOhB9VNXW8TSDTBd1U8s0L77uWHpIhRieEA",
+          "mode": "list",
+          "cachedResultName": "Contact Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19MEAwqL6LOhB9VNXW8TSDTBd1U8s0L77uWHpIhRieEA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19MEAwqL6LOhB9VNXW8TSDTBd1U8s0L77uWHpIhRieEA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "cacdf537-8185-4afd-bc72-612379c038a2",
+      "name": "Contact Database",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        -140,
+        600
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "RGuqo5tt5vJQUa8L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "researchAgent",
+        "description": "Call this tool to search the internet to answer the user's question",
+        "workflowId": {
+          "__rl": true,
+          "value": "QcAFSBjor3ReuR3z",
+          "mode": "list",
+          "cachedResultName": "Research Agent Demo"
+        }
+      },
+      "id": "57b43fcb-9f90-4cff-935c-01b51de1dbc7",
+      "name": "researchAgent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fe7ecc99-e1e8-4a5e-bdd6-6fce9757b234",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa0e39b6-8358-4c55-89f0-c8c13b341fed",
+      "name": "Set 'Text'",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "1023e3d6-f3dd-4acb-9fc0-39622209623c",
+      "name": "Transcribe Audio",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        -240,
+        100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8c844924-b2ed-48b0-935c-c66a8fd0c778",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "39309087-d13d-4a44-bf7c-abd51472cb44",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -640,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/rU18Fk3uSDhmg5Xh41o4",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_666074a093f577b0da996add99b126538bff4a876f195218"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ JSON.stringify($json.message.content).replace(/(^\\\"|\\\"$)/g, '') }}\"\n}\n",
+        "options": {}
+      },
+      "id": "378096aa-7864-45ad-b53a-3e01a452ea6b",
+      "name": "Create Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "data.mpeg"
+        }
+      },
+      "id": "c57e1b4f-4ca7-47ab-8e02-c3d7af3e037f",
+      "name": "Send Audio",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        920,
+        280
+      ],
+      "webhookId": "f1403f74-2e35-4569-a05a-aa56057c4f6f"
+    },
+    {
+      "parameters": {
+        "name": "data",
+        "description": "Retrieves information about company projects"
+      },
+      "id": "19b2841f-7fde-4ca5-a719-1f11e3d3ae2c",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        500,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "sample",
+          "mode": "list",
+          "cachedResultName": "sample"
+        },
+        "options": {
+          "pineconeNamespace": "demo"
+        }
+      },
+      "id": "89b756aa-1b20-4767-af99-78e222b65cea",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        280,
+        840
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "i015hOv0p5Krl0pe",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b267d0ff-a7f6-49e4-a3bb-5c7d58087e5e",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        1040
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Summarize this incoming information:  {{ $json.output }}\n\nOutput only plain text, there should be no markdown formatting or  any symbols.",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "547b2e48-82f1-463f-8b83-05367eb59665",
+      "name": "Summarize Agent Response",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        360,
+        280
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are a personal assistant AI Agent designed to handle various tasks efficiently. Your primary role is to manage contacts, emails, and calendar events for the user. You have access to three tools to help you fulfill requests:\n\nContacts Data: Use this when you need to look up contact information like an email address. You need to use this tool BEFORE sending an email or BEFORE getting emails.\n\nEmail Agent: Use this for handling all email-related actions, like sending messages, setting up replies, or forwarding emails.\n\nCalendar Agent: Use this for scheduling, updating, or managing calendar events.\n\nSend Slack Message: Use this to send a message in Slack.\n\nProjects_Agent: Use this tool to access our projects. We can update our projects of get information on our projects.\n\nWhen a task requires using one or more of these tools, make sure to identify which tool is most appropriate, pass along the relevant details, and execute the actions needed to complete the task. Your goal is to be proactive, precise, and organized in managing these resources to provide a smooth experience for the user.\n\nHere is the current time/date: {{ $now.format('DD')}}"
+        }
+      },
+      "id": "c81653fc-a866-479c-9ebe-924b5693a0ea",
+      "name": "Personal Assistant",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        0,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "name": "calendarAgent",
+        "description": "Call this tool for calendar actions",
+        "workflowId": {
+          "__rl": true,
+          "value": "Rd2MEWOkNMSQYjQi",
+          "mode": "list",
+          "cachedResultName": "Calendar Agent Demo"
+        }
+      },
+      "id": "e3ebc4b0-5468-4b25-a174-e1b2011646c3",
+      "name": "calendarAgent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "name": "emailAgent",
+        "description": "Call this tool for email actions",
+        "workflowId": {
+          "__rl": true,
+          "value": "5lrP84T1NgHG5zAN",
+          "mode": "list",
+          "cachedResultName": "Email Agent Demo"
+        }
+      },
+      "id": "1883ffb3-818c-49de-a74a-926a6789c253",
+      "name": "emailAgent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "b8a6765a-0bb9-4656-9208-5e00df0dae35",
+      "name": "OpenAI Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        600
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d503afc0-9c04-4e6d-984b-bd1e3d706145",
+      "name": "OpenAI Chat Model4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        840
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JFV8h8FLMK6dxzrL",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "https://app.slack.com/client/T03BR0M6Z/CUF60PRCZ",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        260
+      ],
+      "id": "ff5ec31d-173b-4ef3-97ea-4601a78c2b73",
+      "name": "Slack Trigger",
+      "webhookId": "c1d903c6-68aa-4fdb-b146-be7d5936c3a2",
+      "credentials": {
+        "slackApi": {
+          "id": "fG13Z6oyO7xfz1RY",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        380,
+        80
+      ],
+      "id": "fb228d58-6c72-467e-bc5d-d9e6e131ffd8",
+      "name": "Response3",
+      "webhookId": "4a9fdee8-6386-41ae-8eca-e78cc865a65f",
+      "credentials": {
+        "slackApi": {
+          "id": "fG13Z6oyO7xfz1RY",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -400,
+        100
+      ],
+      "id": "9c374ab6-0173-45ba-a3b6-3473b5731f82",
+      "name": "Download Voice File",
+      "webhookId": "bd377627-ede4-44a3-bbc1-348c812e671e",
+      "credentials": {
+        "slackApi": {
+          "id": "fG13Z6oyO7xfz1RY",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Database": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "researchAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set 'Text'": {
+      "main": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio": {
+      "main": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Download Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set 'Text'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Audio": {
+      "main": [
+        [
+          {
+            "node": "Send Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Agent Response": {
+      "main": [
+        [
+          {
+            "node": "Create Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personal Assistant": {
+      "main": [
+        [
+          {
+            "node": "Summarize Agent Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendarAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "emailAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Personal Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Audio": {
+      "main": [
+        []
+      ]
+    },
+    "Download Voice File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response3": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "231d47ea-9d4f-400b-97df-470455e2dde3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8707be5561da15d1b4c629faa0e4a9a6fdd4bfa66f8eb97220cf29c3050d7d3f"
+  },
+  "id": "iIXAmWTCLl8txBTW",
+  "tags": []
+}
